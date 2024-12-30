@@ -59,7 +59,7 @@ class MusicPlayerApp(MDApp):
 
             if self.sound:
                 if not self.sound.length:
-                    self.sound.length = 1 # Set the length to 1 if the length is None
+                    self.sound.length = 1  # Set the length to 1 if the length is None
 
                 self.song_label.text = self.song_title[:-4]
                 self.album_image.source = 'assets/img/king_arthur.jpg'
@@ -112,7 +112,7 @@ class MusicPlayerApp(MDApp):
                 self.progress_bar.value = (current_pos / self.sound.length) * 100
             elif current_pos is None:
                 self.progress_bar.value = 100  # Set the progress bar value to 100 when the audio is finished
-                self.progressbar_event.cancel()
+                self.stopAudio(None)
 
     def setTimeLabels(self, instance):
         if self.sound and self.sound.state == 'play':
