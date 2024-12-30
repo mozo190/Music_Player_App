@@ -16,34 +16,54 @@ Window.size = (400, 500)
 class MusicPlayerApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.song_title = None
         self.sound = None
+        self.paused_pos = 0
+        self.is_paused = False  # Check if the audio is paused
 
     def playAudio(self, instance=None):
-        if self.sound:
-            self.sound.stop()  # Stop the current audio
+        if self.is_paused and self.sound:
+            self.sound.seek(self.paused_pos)
+            self.sound.play()
+            self.is_paused = False
+        else:
+            # If the audio is not paused, play the audio
+            if self.sound:
+                self.sound.stop()
+
+
+            self.song_title = random.choice(self.song_list)
+            self.sound = SoundLoader.load(os.path.join(self.music_dir, self.song_title))
+
+            if self.sound:
+                self.song_label.text = self.song_title[:-4]
+                self.album_image.source = 'assets/img/king_arthur.jpg'
+                self.sound.play()
+            else:
+                self.song_label.text = 'Error: File not found'
 
         self.play_btn.disabled = True
+        self.pause_btn.disabled = False
         self.stop_btn.disabled = False
 
-        self.song_title = random.choice(self.song_list)
-        self.sound = SoundLoader.load(os.path.join(self.music_dir, self.song_title))
-
-        if self.sound:
-            self.song_label.text = self.song_title[:-4]
-            self.album_image.source = 'assets/img/king_arthur.jpg'
-            self.sound.play()
-        else:
-            self.song_label.text = 'Error: File not found'
 
     def stopAudio(self, instance):
         if self.sound:
             self.sound.stop()  # Stop the audio
+
+        self.is_paused = False
+        self.paused_pos = 0
         self.play_btn.disabled = False
+        self.pause_btn.disabled = True
         self.stop_btn.disabled = True
 
     def pauseAudio(self, instance):
-        if self.sound:
-            self.sound.seek(self.sound.get_pos())  # Pause the audio
+        if self.sound and self.sound.state == 'play':
+            self.paused_pos = self.sound.get_pos()  # Save the paused position
+            self.sound.stop()  # Stop the audio
+            self.is_paused = True
+            self.pause_btn.disabled = True  # Disable the pause button
+            self.play_btn.disabled = False
 
     def build(self):
         layout = MDRelativeLayout(md_bg_color=(1, 1, 1, 1))
@@ -62,7 +82,7 @@ class MusicPlayerApp(MDApp):
         self.album_image = Image(source='assets/img/king_arthur.jpg', pos_hint={'center_x': 0.5, 'center_y': 0.55},
                                  size_hint=(1, 0.70))
 
-        # Labels for the app
+        # Buttons for the app
         self.play_btn = MDIconButton(icon='assets/img/play.png', pos_hint={'center_x': 0.3, 'center_y': 0.1},
                                      icon_size=75, on_press=self.playAudio)
 
