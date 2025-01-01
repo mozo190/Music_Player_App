@@ -79,15 +79,15 @@ class MusicPlayerApp(MDApp):
 
     def stopAudio(self, instance):
         if self.sound:
-            self.sound.stop()  # Stop the audio
-            self.timeEvent.cancel()
+            self.sound.stop()
+            if self.timeEvent:
+                self.timeEvent.cancel()
+            if self.progressbar_event:
+                self.progressbar_event.cancel()
 
-            self.sound.unload()  # Unload the audio
             self.progress_bar.value = 0
             self.current_time_label.text = '00:00'
             self.total_time_label.text = '00:00'
-            if self.progressbar_event:  # Stop the progress bar event
-                self.progressbar_event.cancel()
 
         self.is_paused = False
         self.paused_pos = 0
@@ -110,8 +110,8 @@ class MusicPlayerApp(MDApp):
             current_pos = self.sound.get_pos()
             if current_pos is not None and self.sound.length:
                 self.progress_bar.value = (current_pos / self.sound.length) * 100
-            elif current_pos is None:
-                self.progress_bar.value = 100  # Set the progress bar value to 100 when the audio is finished
+            # Set the progress bar value to 100 when the audio is finished
+            elif current_pos is None or current_pos >= self.sound.length:
                 self.stopAudio(None)
 
     def setTimeLabels(self, instance):
@@ -119,7 +119,8 @@ class MusicPlayerApp(MDApp):
             current_time = self.sound.get_pos()
             if current_time is not None and self.sound.length:
                 self.current_time_label.text = time.strftime('%M:%S', time.gmtime(current_time))
-                self.total_time_label.text = time.strftime('%M:%S', time.gmtime(self.sound.length))
+                remaining_time = self.sound.length - current_time
+                self.total_time_label.text = time.strftime('%M:%S', time.gmtime(remaining_time))
             else:
                 self.current_time_label.text = '00:00'
                 self.total_time_label.text = '00:00'
